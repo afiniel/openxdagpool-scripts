@@ -180,7 +180,7 @@ class Accounts
 	public function summary()
 	{
 		return [
-			'not_fully_inspected' => (int) $this->getRowCount('SELECT COUNT(*) FROM accounts WHERE invalidated_at IS NULL AND inspected_times < 3 AND hash IS NULL'),
+			'not_fully_inspected' => (int) $this->getRowCount('SELECT COUNT(*) FROM accounts WHERE invalidated_at IS NULL AND (inspected_times < 3 OR hash IS NULL) AND (first_inspected_at IS NULL OR first_inspected_at > NOW() - INTERVAL 5 DAY)'),
 			'to_be_exported' => (int) $this->getRowCount('SELECT COUNT(*) FROM accounts WHERE exported_at IS NULL AND inspected_times >= 3 AND hash IS NOT NULL AND invalidated_at IS NULL'),
 			'to_be_exported_invalidated' => (int) $this->getRowCount('SELECT COUNT(*) FROM accounts WHERE hash IS NOT NULL AND invalidated_at IS NOT NULL AND invalidated_exported_at IS NULL'),
 			'valid' => (int) $this->getRowCount('SELECT COUNT(*) FROM accounts WHERE hash IS NOT NULL'),
