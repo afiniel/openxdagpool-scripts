@@ -10,6 +10,7 @@ return [
 
 	// enter your MySQL connection information here. Database should be created with:
 	// CREATE DATABASE scripts CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+	// next execute the db_schema.sql file to create one necessary database table
 	'db' => [
 		'host' => 'localhost',
 		'user' => 'scripts',
@@ -19,7 +20,7 @@ return [
 
 	// if you've used multiple pool wallets and want to import accounts,
 	// supply a text file relative to base dir here.
-	// Leave only one account addresses per line. For example:
+	// Leave only one account address per line. For example:
 	// echo -e "account 1000000000\nexit\n" | tail -n +2 | head -n -1 | sed -r "s/xdag> (.+)/\\1/" | cut -d ' ' -f 1 > extra_accounts.txt
 	//'extra_accounts_file' => 'extra_accounts.txt',
 
