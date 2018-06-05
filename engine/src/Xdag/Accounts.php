@@ -65,14 +65,14 @@ class Accounts
 		$lock = new ExclusiveLock('accounts_process', 300);
 		$lock->obtain();
 
-		$date_threshold = date('Y-m-d H:i:s', strtotime('-5 days'));
+		if ($all)
+			$query = 'first_inspected_at IS NULL OR first_inspected_at > NOW() - INTERVAL 5 DAY';
+		else
+			$query = 'invalidated_at IS NULL AND (inspected_times < 3 OR hash IS NULL) AND (first_inspected_at IS NULL OR first_inspected_at > NOW() - INTERVAL 5 DAY)';
 
-		foreach ($this->accounts($all ? '' : 'invalidated_at IS NULL AND (inspected_times < 3 OR hash IS NULL)') as $address => $account) {
-			if ($account['first_inspected_at'] && $account['first_inspected_at'] < $date_threshold)
-				continue; // account was processed enough times, skip processing to conserve resources
-
+		foreach ($this->accounts($query, true) as $address => $account) {
 			if ($account['last_inspected_at'] && $account['last_inspected_at'] > date('Y-m-d H:i:s', strtotime('-10 minutes')) && (!$account['found_at'] || $account['found_at'] > date('Y-m-d H:i:s', strtotime('-1 day')) . '000'))
-				continue; // do not inspect recent accounts too often, give pool a chance to pay out the miner
+				continue; // do not inspect recent accounts too often, give pool a chance to pay out the miners
 
 			if (!$account['first_inspected_at'])
 				$account['first_inspected_at'] = date('Y-m-d H:i:s');
@@ -148,17 +148,11 @@ class Accounts
 		$lock = new ExclusiveLock('accounts_process', 300);
 		$lock->obtain();
 
-		$export_address = $export_account = null;
 		foreach ($this->accounts('exported_at IS NULL AND inspected_times >= 3 AND hash IS NOT NULL AND invalidated_at IS NULL ORDER BY found_at LIMIT 1') as $address => $account) {
-			$export_address = $address;
-			$export_account = $account;
-		}
-
-		if ($export_address) {
 			$block = new Block();
-			$json = $block->load($export_account['hash']);
-			$export_account['exported_at'] = date('Y-m-d H:i:s');
-			$this->saveAccount($export_address, $export_account, true);
+			$json = $block->load($account['hash']);
+			$account['exported_at'] = date('Y-m-d H:i:s');
+			$this->saveAccount($address, $account, true);
 			$lock->release();
 			return $json;
 		}
@@ -172,17 +166,11 @@ class Accounts
 		$lock = new ExclusiveLock('accounts_process', 300);
 		$lock->obtain();
 
-		$export_address = $export_account = null;
 		foreach ($this->accounts('hash IS NOT NULL AND invalidated_at IS NOT NULL AND invalidated_exported_at IS NULL LIMIT 1') as $address => $account) {
-			$export_address = $address;
-			$export_account = $account;
-		}
-
-		if ($export_address) {
-			$export_account['invalidated_exported_at'] = date('Y-m-d H:i:s');
-			$this->saveAccount($export_address, $export_account, true);
+			$account['invalidated_exported_at'] = date('Y-m-d H:i:s');
+			$this->saveAccount($address, $account, true);
 			$lock->release();
-			return json_encode(['invalidateBlock' => $export_account['hash']]);
+			return json_encode(['invalidateBlock' => $account['hash']]);
 		}
 
 		$lock->release();
@@ -282,39 +270,34 @@ class Accounts
 		}
 	}
 
-	protected function accounts($sql = null)
+	protected function accounts($sql = null, $paginate = false)
 	{
 		$query = 'SELECT
-			address, hash, payouts_sum, first_inspected_at, last_inspected_at, inspected_times,
+			id, address, hash, payouts_sum, first_inspected_at, last_inspected_at, inspected_times,
 			found_at, exported_at, invalidated_at, invalidated_exported_at
 		FROM accounts';
 
 		if ($sql)
 			$query .= ' WHERE ' . $sql;
 
-		$result = $this->runSelect($query);
+		$last_id = 0;
 
-		while ($account = $result->fetch_assoc()) {
-			$address = $account['address'];
-			unset($account['address']);
+		do {
+			if ($paginate)
+				$run_query = $query . ($sql ? ' AND ' : ' WHERE ') . 'id > ' . $last_id . ' ORDER BY id ASC LIMIT 200';
+			else
+				$run_query = $query;
 
-			yield $address => $account;
-		}
+			$result = $this->runSelect($run_query);
 
-		$result->free();
+			while ($account = $result->fetch_assoc()) {
+				$address = $account['address'];
+				$last_id = $account['id'];
+				unset($account['address'], $account['id']);
 
-		$files = [__ROOT__ . '/storage/updates.sql', __ROOT__ . '/storage/inserts.sql'];
-		foreach ($files as $file) {
-			$f = @fopen($file, 'r');
-			if (!$f)
-				return;
-
-			while ($query = fgets($f, 4096))
-				$this->runInsertOrUpdate($query);
-
-			fclose($f);
-			unlink($file);
-		}
+				yield $address => $account;
+			}
+		} while ($paginate && $result->num_rows);
 	}
 
 	protected function saveAccount($address, $account, $replace = false)
@@ -330,18 +313,6 @@ class Accounts
 		try {
 			return $this->runInsertOrUpdate($query);
 		} catch (QueryException $ex) {
-			if ($this->mysql->errno == 2014) {
-				// looping a result set, store update / insert query for later
-				$file = __ROOT__ . '/storage/' . ($replace ? 'updates' : 'inserts') . '.sql';
-				$file = @fopen($file, 'a');
-
-				if (!$file || !@fwrite($file, $query . "\n"))
-					throw $ex;
-
-				fclose($file);
-				return true;
-			}
-
 			if (!$replace && $this->mysql->errno == 1062) // duplicate entry, expected
 				return true;
 
@@ -373,7 +344,7 @@ class Accounts
 
 	protected function runSelect($query)
 	{
-		$result = $this->mysql->query($query, MYSQLI_USE_RESULT);
+		$result = $this->mysql->query($query);
 
 		if ($result === false)
 			throw new QueryException('Query "' . $query . '" failed. ' . $this->mysql->errno . ': ' . $this->mysql->error);
