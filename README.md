@@ -49,7 +49,7 @@ Execute `php core.php blocks gather`. Wait for the command to complete. Type `cr
 If your PHP installation has different path, enter appropriate values.
 
 If you want the scripts to automatically configure `iptables` so that connections to pool port are blocked for all IPs except IPs in the whitelist,
-make sure you set the `CONFIG.sh` values appropriately, and then delete this line from the cron schedule:
+make sure you set the `CONFIG.sh` values appropriately, and then delete this line from the `pool` user's cron schedule:
 ```
 40 */3 * * * /bin/bash /home/pool/scripts/xdag_update_whitelist.sh
 ```
