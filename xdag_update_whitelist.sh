@@ -101,10 +101,10 @@ if [ -f /home/pool/scripts/CONFIG.sh -a "$EUID" == "0" ]; then
 
 		while read -u 10 LINE; do
 			IP="`echo "$LINE" | cut -d ':' -f 1`"
-			"$IPT" -A INPUT --dport "$POOL_PORT" -s "$IP" -j ACCEPT
-			"$IPT" -A INPUT --dport "$POOL_PORT" -j DROP
-
+			"$IPT" -A INPUT -p tcp --dport "$POOL_PORT" -s "$IP" -j ACCEPT
 		done 10</var/www/pool/netdb-filtered.txt
+
+		"$IPT" -A INPUT -p tcp --dport "$POOL_PORT" -j DROP
 	fi
 fi
 
