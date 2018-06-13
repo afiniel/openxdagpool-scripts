@@ -26,10 +26,29 @@ class Accounts
 
 	public function gather($all = false)
 	{
+		$file = @fopen($file_name = __ROOT__ . '/storage/new_accounts.txt', 'a');
+
+		if (!$file)
+			throw new AccountsException('Unable to open file: ' . $file_name);
+
 		$lock = new ExclusiveLock('accounts_gather', 300);
 		$lock->obtain();
 
 		foreach (($this->get_accounts)($all ? 10000000000 : 10000) as $line) {
+			// free up the daemon as soon as possible by simply writing the result to a file,
+			// then process our result later
+			// (database inserts might take a long time on large tables)
+			if (!@fwrite($file, $line . "\n"))
+				throw new AccountsException('Unable to write to file: ' . $file_name);
+		}
+
+		fclose($file);
+		$file = @fopen($file_name, 'r');
+
+		if (!$file)
+			throw new AccountsException('Unable to open file: ' . $file_name);
+
+		while (($line = @fgets($file)) !== false) {
 			$line = preg_split('/\s+/', trim($line));
 
 			if (count($line) !== 4)
@@ -56,6 +75,9 @@ class Accounts
 				'invalidated_exported_at' => null,
 			]);
 		}
+
+		fclose($file);
+		unlink($file_name);
 
 		$lock->release();
 	}
@@ -371,5 +393,5 @@ class Accounts
 	}
 }
 
-class AccountsException extends \Exception {}
-class QueryException extends \Exception {}
+class AccountsException extends XdagException {}
+class QueryException extends AccountsException {}

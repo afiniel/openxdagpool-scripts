@@ -53,6 +53,8 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'locked', 'message' => 'Blocks gather operation is currently in progress, please try again later.']);
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 	}
 
@@ -66,6 +68,8 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'locked', 'message' => 'Blocks process operation is currently in progress, please try again later.']);
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 	}
 
@@ -78,6 +82,8 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'locked', 'message' => 'Blocks process operation is currently in progress, please try again later.']);
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 
 		if ($json)
@@ -95,6 +101,8 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'locked', 'message' => 'Blocks process operation is currently in progress, please try again later.']);
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 
 		if ($json)
@@ -111,6 +119,8 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'locked', 'message' => 'Blocks process operation is currently in progress, please try again later.']);
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 
 		return $this->responseJson(['result' => 'success', 'message' => 'All blocks will be exported again on export calls.']);
@@ -124,6 +134,8 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'locked', 'message' => 'Blocks process operation is currently in progress, please try again later.']);
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 
 		return $this->responseJson(['result' => 'success', 'message' => 'All invalidated blocks will be exported again on exportInvalidated calls.']);
@@ -135,6 +147,8 @@ class BlocksController extends Controller
 			return $this->responseJson($this->accounts->summary());
 		} catch (QueryException $ex) {
 			$this->responseJson(['result' => 'query-exception', 'message' => 'Query exception: ' . $ex->getMessage()]);
+		} catch (AccountsException $ex) {
+			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 	}
 
