@@ -53,7 +53,7 @@ make sure you set the `CONFIG.sh` values appropriately, and then delete this lin
 ```
 40 */3 * * * /bin/bash /home/pool/scripts/xdag_update_whitelist.sh
 ```
-Add the same line as cron schedule for `root`. The script can only manage `iptables` rules as `root` user. If you don't set up the config file properly,
+Add the same line as the only cron schedule for `root`. The script can only manage `iptables` rules as `root` user. If you don't set up the config file properly,
 or you don't run the `xdag_update_whitelist.sh` script as root, it will only update your whitelist and not touch your `iptables` rules. If you use `ufw`,
 disable it or tweak it so it doesn't interfere with generated rules.
 
