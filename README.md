@@ -17,14 +17,15 @@ On a fresh ubuntu server 16.04 LTS installation, perform the following steps, in
 8. `git clone https://github.com/XDagger/xdag.git xdag1`
 9. `git clone https://github.com/XDagger/xdag.git xdag2` (TWO separate working copies are necessary for proper pool operation)
 9. `echo -n 1 > ~/CURRENT_XDAG`
-10. go to `shell_templates` directory in this repository, and COPY all files to both `xdag1/client` and `xdag2/client`. Edit the `xdag_run.sh` file in both folders with *your* pool settings. Edit the
+10. go to checked out `scripts` directory and `cp CONFIG.sh.EXAMPLE CONFIG.sh`. Edit the file and set appropriate values.
+11. go to `shell_templates` directory in this repository, and COPY all files to both `xdag1/client` and `xdag2/client`. Edit the `xdag_run.sh` file in both folders with *your* pool settings. Edit the
 `xdag_pool_forward_enable.sh` and `xdag_pool_forward_disable.sh` scripts in both folders with your WAN IP and miners port.
-11. `ln -s /home/pool/storage /home/pool/xdag1/client/storage`
-12. `ln -s /home/pool/storage /home/pool/xdag2/client/storage`
-12. make sure `/var/www/pool` exists and is owned by `pool`
-14. make sure a new php7.0-fpm pool is running as user `pool`
-15. make sure nginx config allows execution of `php` files
-16. copy `engine/config.php.EXAMPLE` to `engine/config.php`, read the file and set appropriate values. Configure the mysql server and create a database according to comments. Create one
+12. `ln -s /home/pool/storage /home/pool/xdag1/client/storage`
+13. `ln -s /home/pool/storage /home/pool/xdag2/client/storage`
+14. make sure `/var/www/pool` exists and is owned by `pool`
+15. make sure a new php7.0-fpm pool is running as user `pool`
+16. make sure nginx config allows execution of `php` files
+17. copy `engine/config.php.EXAMPLE` to `engine/config.php`, read the file and set appropriate values. Configure the mysql server and create a database according to comments. Create one
 database table given in `engine/db_schema.sql`
 
 Once this is done, compile both xdag1 and xdag2 using `make` in the `client` folder. Compile as user `pool`. Execute xdag1 by running `./xdag_run.sh` in `client` folder.
@@ -47,7 +48,16 @@ Execute `php core.php blocks gather`. Wait for the command to complete. Type `cr
 ```
 If your PHP installation has different path, enter appropriate values.
 
-Done. Your software should now periodically inspect new found blocks, update `netdb-white.txt` for the pools, and archive xdag log files.
+If you want the scripts to automatically configure `iptables` so that connections to pool port are blocked for all IPs except IPs in the whitelist,
+make sure you set the `CONFIG.sh` values appropriately, and then delete this line from the cron schedule:
+```
+40 */3 * * * /bin/bash /home/pool/scripts/xdag_update_whitelist.sh
+```
+Add the same line as cron schedule for `root`. The script can only manage `iptables` rules as `root` user. If you don't set up the config file properly,
+or you don't run the `xdag_update_whitelist.sh` script as root, it will only update your whitelist and not touch your `iptables` rules. If you use `ufw`,
+disable it or tweak it so it doesn't interfere with generated rules.
+
+Done. Your software should now periodically inspect new found blocks, update `netdb-white.txt` for the pools, manage firewall, and archive xdag log files.
 
 As a last thing, copy `wwwscripts/core_call.php` into `/var/www/pool` directory. Make sure the file is owned by `pool` user and is executable.
 

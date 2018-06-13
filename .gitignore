@@ -1,4 +1,5 @@
 .DS_Store
+CONFIG.sh
 /engine/CURRENT_XDAG
 /engine/config.php
 /engine/extra_accounts.txt

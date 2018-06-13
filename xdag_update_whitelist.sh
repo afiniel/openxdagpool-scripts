@@ -91,5 +91,26 @@ while read -u 10 LINE; do
 	fi
 done 10</var/www/pool/netdb-filtered.txt
 
+if [ -f /home/pool/scripts/CONFIG.sh -a "$EUID" == "0" ]; then
+	. /home/pool/scripts/CONFIG.sh
+
+	IPT="`which iptables`"
+
+	if [ $? -eq 0 -a "$CONFIGURE_IPTABLES" == "1" ]; then
+		"$IPT" -F INPUT
+
+		while read -u 10 LINE; do
+			IP="`echo "$LINE" | cut -d ':' -f 1`"
+			"$IPT" -A INPUT --dport "$POOL_PORT" -s "$IP" -j ACCEPT
+			"$IPT" -A INPUT --dport "$POOL_PORT" -j DROP
+
+		done 10</var/www/pool/netdb-filtered.txt
+	fi
+fi
+
+if [ "$EUID" == "0" ]; then
+	chown pool:pool /var/www/pool/netdb-filtered.txt
+fi
+
 mv /var/www/pool/netdb-filtered.txt /home/pool/xdag1/client/netdb-white.txt
 cp /home/pool/xdag1/client/netdb-white.txt /home/pool/xdag2/client/netdb-white.txt

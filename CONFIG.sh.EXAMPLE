@@ -1,0 +1,7 @@
+# set this to your pool port. Only needed for the next feature.
+POOL_PORT="16775"
+
+# set this to 1 to automatically block ALL connections to pool port except
+# from IPs in the whitelist. If you use ufw, disable it or tweak it so
+# it doesn't interfere.
+CONFIGURE_IPTABLES=0
