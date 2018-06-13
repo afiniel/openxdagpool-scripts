@@ -26,13 +26,13 @@ class Accounts
 
 	public function gather($all = false)
 	{
+		$lock = new ExclusiveLock('accounts_gather', 300);
+		$lock->obtain();
+
 		$file = @fopen($file_name = __ROOT__ . '/storage/new_accounts.txt', 'a');
 
 		if (!$file)
 			throw new AccountsException('Unable to open file: ' . $file_name);
-
-		$lock = new ExclusiveLock('accounts_gather', 300);
-		$lock->obtain();
 
 		foreach (($this->get_accounts)($all ? 10000000000 : 10000) as $line) {
 			// free up the daemon as soon as possible by simply writing the result to a file,
