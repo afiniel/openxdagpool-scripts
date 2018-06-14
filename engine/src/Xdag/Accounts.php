@@ -300,7 +300,7 @@ class Accounts
 		FROM accounts';
 
 		if ($sql)
-			$query .= ' WHERE ' . $sql;
+			$query .= ' WHERE (' . $sql . ')';
 
 		$last_id = 0;
 
