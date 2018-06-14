@@ -88,7 +88,7 @@ class Accounts
 		$lock->obtain();
 
 		if ($all)
-			$query = 'first_inspected_at IS NULL OR first_inspected_at > NOW() - INTERVAL 5 DAY';
+			$query = '(first_inspected_at IS NULL OR first_inspected_at > NOW() - INTERVAL 5 DAY)';
 		else
 			$query = 'invalidated_at IS NULL AND (inspected_times < 3 OR hash IS NULL) AND (first_inspected_at IS NULL OR first_inspected_at > NOW() - INTERVAL 5 DAY)';
 
@@ -300,7 +300,7 @@ class Accounts
 		FROM accounts';
 
 		if ($sql)
-			$query .= ' WHERE (' . $sql . ')';
+			$query .= ' WHERE ' . $sql;
 
 		$last_id = 0;
 
