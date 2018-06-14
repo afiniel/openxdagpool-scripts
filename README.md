@@ -44,7 +44,6 @@ Execute `php core.php blocks gather`. Wait for the command to complete. Type `cr
 40 */3 * * * /bin/bash /home/pool/scripts/xdag_update_whitelist.sh
 50 */3 * * * /bin/bash /home/pool/scripts/xdag_archive_logs.sh
 50 2 * * * /bin/bash /home/pool/scripts/xdag_delete_tmp_files.sh
-
 ```
 If your PHP installation has different path, enter appropriate values.
 
