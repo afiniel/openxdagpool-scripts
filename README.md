@@ -58,7 +58,7 @@ disable it or tweak it so it doesn't interfere with generated rules.
 
 Done. Your software should now periodically inspect new found blocks, update `netdb-white.txt` for the pools, manage firewall, and archive xdag log files.
 
-As a last thing, copy `wwwscripts/core_call.php` into `/var/www/pool` directory. Make sure the file is owned by `pool` user and is executable.
+As a last thing, copy `www_scripts/core_call.php` into `/var/www/pool` directory. Make sure the file is owned by `pool` user and is executable.
 
 # Partial setup
 If you already run your pool daemon by any means, only necessary additions for the [OpenXDAGPool](https://github.com/XDagger/openxdagpool) to work properly
