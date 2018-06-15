@@ -86,7 +86,7 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 
-		if (isset($json))
+		if (isset($json) && $json !== false)
 			return $this->response($json);
 
 		return $this->responseJson(['result' => 'empty', 'message' => 'No new blocks.']);
@@ -105,7 +105,7 @@ class BlocksController extends Controller
 			$this->responseJson(['result' => 'error', 'message' => $ex->getMessage()]);
 		}
 
-		if (isset($json))
+		if (isset($json) && $json !== false)
 			return $this->response($json);
 
 		return $this->responseJson(['result' => 'empty', 'message' => 'No new invalidated blocks.']);
