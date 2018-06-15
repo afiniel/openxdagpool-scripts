@@ -23,10 +23,21 @@ On a fresh ubuntu server 16.04 LTS installation, perform the following steps, in
 12. `ln -s /home/pool/storage /home/pool/xdag1/client/storage`
 13. `ln -s /home/pool/storage /home/pool/xdag2/client/storage`
 14. make sure `/var/www/pool` exists and is owned by `pool`
-15. make sure a new php7.0-fpm pool is running as user `pool`
-16. make sure nginx config allows execution of `php` files
-17. copy `engine/config.php.EXAMPLE` to `engine/config.php`, read the file and set appropriate values. Configure the mysql server and create a database according to comments. Create one
+15. copy `www_scripts/core_call.php` into `/var/www/pool` directory
+16. make sure a new php7.0-fpm pool is running as user `pool`
+17. make sure nginx config allows execution of `php` files
+18. copy `engine/config.php.EXAMPLE` to `engine/config.php`, read the file and set appropriate values. Configure the mysql server and create a database according to comments. Create one
 database table given in `engine/db_schema.sql`
+19. create a new nginx vhost with root in `/var/www/pool` directory, using `server_name pool.local`. **Make sure** this vhost is not callable from the internet.
+Configuration depends a lot on your exact setup, but you may use configuration directives like `allow 127.0.0.1; deny all;` in the server directive if required. You may add `127.0.0.1 pool.local` into your `/etc/hosts` if necessary.
+20. make sure you can call the core by issuing `wget -qO- http://pool.local/core_call.php` from the environment that will run [OpenXDAGPool](https://github.com/XDagger/openxdagpool). You should see a json like this, verifying the configuration is correct.
+```
+{
+    "result": "empty",
+    "message": "Invaild action specified."
+}
+```
+21. **make sure** `core_call.php` is not callable from the internet, for example by using `wget -qO- --header="Host: pool.local" http://yourpool.net/core_call.php`
 
 Once this is done, compile both xdag1 and xdag2 using `make` in the `client` folder. Compile as user `pool`. Execute xdag1 by running `./xdag_run.sh` in `client` folder.
 You don't have to run with the `-r` flag for the first time.
@@ -57,8 +68,6 @@ or you don't run the `xdag_update_whitelist.sh` script as root, it will only upd
 disable it or tweak it so it doesn't interfere with generated rules.
 
 Done. Your software should now periodically inspect new found blocks, update `netdb-white.txt` for the pools, manage firewall, and archive xdag log files.
-
-As a last thing, copy `www_scripts/core_call.php` into `/var/www/pool` directory. Make sure the file is owned by `pool` user and is executable.
 
 # Partial setup
 If you already run your pool daemon by any means, only necessary additions for the [OpenXDAGPool](https://github.com/XDagger/openxdagpool) to work properly
