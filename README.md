@@ -29,7 +29,7 @@ On a fresh ubuntu server 16.04 LTS installation, perform the following steps, in
 18. copy `engine/config.php.EXAMPLE` to `engine/config.php`, read the file and set appropriate values. Configure the mysql server and create a database according to comments. Create one
 database table given in `engine/db_schema.sql`
 19. create a new nginx vhost with root in `/var/www/pool` directory, using `server_name pool.local`. **Make sure** this vhost is not callable from the internet.
-Configuration depends a lot on your exact setup, but you may use configuration directives like `allow 127.0.0.1; deny all;` in the server directive if required. You may add `127.0.0.1 pool.local` into your `/etc/hosts` if necessary.
+Configuration depends a lot on your exact setup, but you may use configuration directives like `allow 127.0.0.1; deny all;` in the server section if required. You may add `127.0.0.1 pool.local` into your `/etc/hosts` if necessary.
 20. make sure you can call the core by issuing `wget -qO- http://pool.local/core_call.php` from the environment that will run [OpenXDAGPool](https://github.com/XDagger/openxdagpool). You should see a json like this, verifying the configuration is correct.
 ```
 {
