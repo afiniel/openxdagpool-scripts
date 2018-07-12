@@ -74,6 +74,9 @@ class Xdag
 
 	public function getMainBlocks($number = 100)
 	{
+		if (!$this->isReady())
+			throw new XdagNodeNotReadyException;
+
 		return $this->commandStream('mainblocks ' . min(100, max(1, intval($number))));
 	}
 
