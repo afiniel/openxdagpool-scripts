@@ -26,4 +26,6 @@ return [
 
 	// change to XdagLocal to allow for local development without a running daemon (spoofed data)
 	'xdag_class' => 'Xdag',
+	// local development simulated xdag version
+	'xdag_version' => '0.2.5',
 ];

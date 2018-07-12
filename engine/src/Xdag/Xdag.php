@@ -7,6 +7,7 @@ use App\Xdag\Exceptions\{XdagException, XdagBlockNotFoundException, XdagNodeNotR
 class Xdag
 {
 	protected $socket_file;
+	protected $version;
 
 	public function __construct($socket_file)
 	{
@@ -42,8 +43,16 @@ class Xdag
 		return $this->command('state');
 	}
 
+	public function versionGreaterThan($version = '0.2.4')
+	{
+		return version_compare($this->getVersion(), $version) === 1;
+	}
+
 	public function getVersion()
 	{
+		if ($this->version)
+			return $this->version;
+
 		$file = str_replace('"', '\"', dirname($this->socket_file) . '/xdag');
 		exec('"' . $file . '"', $out);
 
@@ -52,7 +61,7 @@ class Xdag
 
 		$line = current($out);
 		$line = preg_split('/\s+/', trim($line));
-		return rtrim(end($line), '.');
+		return $this->version = rtrim(end($line), '.');
 	}
 
 	public function getAccounts($number = 100)
@@ -63,9 +72,9 @@ class Xdag
 		return $this->commandStream('account ' . max(1, intval($number)));
 	}
 
-	public function getLastBlocks($number = 100)
+	public function getMainBlocks($number = 100)
 	{
-		return $this->commandStream('lastblocks ' . min(100, max(1, intval($number))));
+		return $this->commandStream('mainblocks ' . min(100, max(1, intval($number))));
 	}
 
 	public function getBalance($address)
@@ -206,7 +215,7 @@ class Xdag
 		foreach ($this->commandStream('miners') as $line) {
 			$parts = preg_split('/\s+/siu', trim($line));
 
-			if (count($parts) !== 6)
+			if (count($parts) !== 6 && count($parts) !== 8)
 				continue;
 
 			if ($parts[0] === '-1.')
@@ -219,7 +228,12 @@ class Xdag
 				$parts[1] = $last_miner[1]; // replace miner's address from last active miner entry
 				$parts[2] = $last_miner[2]; // replace miner's state from last active miner entry
 				$parts[5] = $last_miner[5]; // replace miner's unpaid shares with value from last active miner entry
-				$last_miner[5] = 0; // replace unpaid shares only for first connection, treat all other connections as zero unpaid shares (sum => vallue from last active miner entry)
+				$last_miner[5] = 0; // replace unpaid shares only for first connection, treat all other connections as zero unpaid shares (sum => value from last active miner entry)
+
+				if (count($parts) == 8) {
+					$parts[7] = $last_miner[7]; // replace miner's hashrate with value from last active miner entry
+					$last_miner[7] = 0; // replace hashrate only for first connection, treat all other connections as zero hashrate (sum => value from last active miner entry)
+				}
 			} else {
 				$last_miner = $parts; // store currently processed miner entry
 			}
@@ -240,6 +254,8 @@ class Xdag
 					'ip_and_port' => $parts[3],
 					'in_out_bytes' => array_map('intval', explode('/', $parts[4])),
 					'unpaid_shares' => (float) $parts[5],
+					'name' => (isset($parts[6]) && $parts[6] !== '-') ? $parts[6] : null,
+					'hashrate' => isset($parts[7]) ? $parts[7] * 1024 * 1024 : null,
 				];
 		};
 

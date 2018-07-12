@@ -41,10 +41,12 @@ if (!preg_match('/^[0-9]+$/', $current_xdag))
 
 $socket_file = $config['base_dir'] . '/xdag' . $current_xdag . '/client/unix_sock.dat';
 
-if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal')
+if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\XdagLocal($socket_file);
-else
+	$xdag->setVersion($config['xdag_version'] ?? '0.2.5');
+} else {
 	$xdag = new App\Xdag\Xdag($socket_file);
+}
 
 $controller = "App\\Controllers\\$controller";
 $controller = new $controller($config, $xdag);
