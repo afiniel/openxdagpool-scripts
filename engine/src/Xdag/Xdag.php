@@ -72,12 +72,12 @@ class Xdag
 		return $this->commandStream('account ' . max(1, intval($number)));
 	}
 
-	public function getMainBlocks($number = 100)
+	public function getMinedBlocks($number = 100)
 	{
 		if (!$this->isReady())
 			throw new XdagNodeNotReadyException;
 
-		return $this->commandStream('mainblocks ' . min(100, max(1, intval($number))));
+		return $this->commandStream('minedblocks ' . min(100, max(1, intval($number))));
 	}
 
 	public function getBalance($address)

@@ -13,7 +13,7 @@ class BlocksController extends Controller
 	public function index($action = null)
 	{
 		try {
-			$this->accounts = new Accounts($this->config, [$this->xdag, $this->xdag->versionGreaterThan('0.2.4') ? 'getMainBlocks' : 'getAccounts'], [$this->xdag, 'parseBlock']);
+			$this->accounts = new Accounts($this->config, [$this->xdag, $this->xdag->versionGreaterThan('0.2.4') ? 'getMinedBlocks' : 'getAccounts'], [$this->xdag, 'parseBlock']);
 		} catch (AccountsException $ex) {
 			return $this->responseJson(['result' => 'invalid-config', 'message' => 'Unable to connect to the database. Check your configuration. Message: ' . $ex->getMessage()]);
 		}

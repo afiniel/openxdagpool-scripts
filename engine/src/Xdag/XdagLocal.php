@@ -53,7 +53,7 @@ class XdagLocal extends Xdag
 		if ($cmd[0] == 'account')
 			return 'QHul3aEvYN8KHkArCW7xOw1i5uLLGRzN       1024.000000000  key 0';
 
-		if ($cmd[0] == 'mainblocks')
+		if ($cmd[0] == 'minedblocks')
 			return '-----------------------------------------------------------------------
 address                            time                      state
 -----------------------------------------------------------------------
