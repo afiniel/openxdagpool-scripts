@@ -54,7 +54,7 @@ class Xdag
 			return $this->version;
 
 		$file = str_replace('"', '\"', dirname($this->socket_file) . '/xdag');
-		exec('"' . $file . '"', $out);
+		exec('"' . $file . '" --help', $out);
 
 		if (!$out)
 			return '???';
