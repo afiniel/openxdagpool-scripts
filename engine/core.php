@@ -99,11 +99,11 @@ blocks args:
 	- gathers new pool blocks (all) using the 'account' or 'minedblocks'
 	- command. Designed to be run once a day.
 	inspect
-	- inspects newly imported accounts. Designed to be run every minute.
+	- inspects newly imported pool blocks. Designed to be run every minute.
 	inspectAll
-	- reprocesses each already inspected account. Validates previously
-	- invalidated accounts if required, also invalidates previously
-	- validated accounts if required. Designed to be run once a day.
+	- reprocesses each already inspected pool block. Validates previously
+	- invalidated blocks if required, also invalidates previously
+	- validated blocks if required. Designed to be run once a day.
 	export
 	- exports oldest unexported fully processed and validated found block.
 	- Can be called any time, if operation is currently locked, a proper
