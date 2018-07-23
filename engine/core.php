@@ -93,10 +93,10 @@ balance args:
 
 blocks args:
 	gather
-	- gathers pool blocks (10000) using the 'account' or 'minedblocks'
+	- gathers new pool blocks (10000) using the 'account' or 'minedblocks'
 	- command. Designed to be run every minute.
 	gatherAll
-	- gathers pool blocks (all) using the 'account' or 'minedblocks'
+	- gathers new pool blocks (all) using the 'account' or 'minedblocks'
 	- command. Designed to be run once a day.
 	inspect
 	- inspects newly imported accounts. Designed to be run every minute.
