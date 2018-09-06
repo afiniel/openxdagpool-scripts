@@ -5,3 +5,6 @@ POOL_PORT="16775"
 # from IPs in the whitelist. If you use ufw, disable it or tweak it so
 # it doesn't interfere.
 CONFIGURE_IPTABLES=0
+
+# set to "-testnet" to update testnet whitelist instead of production one
+WHITELIST_SUFFIX=""

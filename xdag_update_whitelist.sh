@@ -1,9 +1,14 @@
 #!/bin/bash
 
 DL="`which wget`"
+WHITELIST_SUFFIX=""
+
+if [ -f /home/pool/scripts/CONFIG.sh ]; then
+	. /home/pool/scripts/CONFIG.sh
+fi
 
 if [ $? -eq 0 ]; then
-	"$DL" https://raw.githubusercontent.com/XDagger/xdag/master/client/netdb-white.txt -O /var/www/pool/netdb-white.txt 2>/dev/null
+	"$DL" https://raw.githubusercontent.com/XDagger/xdag/master/client/netdb-white"$WHITELIST_SUFFIX".txt -O /var/www/pool/netdb-white.txt 2>/dev/null
 
 	if [ $? -ne 0 ]; then
 		echo "Wget call failed, not updating whitelist."
@@ -17,7 +22,7 @@ else
 		exit 1
 	fi
 
-	"$DL" https://raw.githubusercontent.com/XDagger/xdag/master/client/netdb-white.txt --output /var/www/pool/netdb-white.txt 2>/dev/null
+	"$DL" https://raw.githubusercontent.com/XDagger/xdag/master/client/netdb-white"$WHITELIST_SUFFIX".txt --output /var/www/pool/netdb-white.txt 2>/dev/null
 
 	if [ $? -ne 0 ]; then
 		echo "Curl call failed, not updating whitelist."
@@ -112,5 +117,5 @@ if [ "$EUID" == "0" ]; then
 	chown pool:pool /var/www/pool/netdb-filtered.txt
 fi
 
-mv /var/www/pool/netdb-filtered.txt /home/pool/xdag1/client/netdb-white.txt
-cp /home/pool/xdag1/client/netdb-white.txt /home/pool/xdag2/client/netdb-white.txt
+mv /var/www/pool/netdb-filtered.txt /home/pool/xdag1/client/netdb-white"$WHITELIST_SUFFIX".txt
+cp /home/pool/xdag1/client/netdb-white"$WHITELIST_SUFFIX".txt /home/pool/xdag2/client/netdb-white"$WHITELIST_SUFFIX".txt
