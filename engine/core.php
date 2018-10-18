@@ -7,7 +7,7 @@ define('__ROOT__', __DIR__);
 if ($argc < 2)
 	usage();
 
-// so the os time must be set to match this default UTC
+// and the os time must be set to match this default UTC
 date_default_timezone_set('UTC');
 
 // reading configs from
