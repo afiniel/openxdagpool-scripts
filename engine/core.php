@@ -1,29 +1,30 @@
 <?php
 
-// help finding config.php at the same directory
+// __ROOT__ constant defined as current script directory is used to construct various paths
 define('__ROOT__', __DIR__);
 
-// if params is less than 2 , then make a notification
+// first command line argument is always the script name that was executed (core.php, etc)
+// we need at least the second "operation" argument, without it, print help instead
 if ($argc < 2)
 	usage();
 
-// and the os time must be set to match this default UTC
+// make sure this program internally runs in UTC timezone
 date_default_timezone_set('UTC');
 
-// reading configs from
+// read current config
 $config = require_once __DIR__ . '/config.php';
 
-// changing cmd to classname in this mapping
+// map command line "operation" argument to controller class name
 $map = ['livedata' => 'LiveDataController', 'fastdata' => 'FastDataController', 'blocks' => 'BlocksController', 'balance' => 'BalanceController'];
 $controller = $map[$argv[1]] ?? null;
 
-// only livedata fastdata blocks balance are accepted
+// if we were unable to map the "operation" argument to controller, print usage and exit
 if (!$controller) {
 	echo "Invalid operation.\n";
 	usage();
 }
 
-// if in using of a class from namespace App/* then find it in __DIR__/src
+// autoload any class in the App namespace from __DIR__/src
 spl_autoload_register(function ($class) {
 	$class = explode('\\', $class);
 	if ($class[0] == 'App')
@@ -39,22 +40,22 @@ spl_autoload_register(function ($class) {
 	require_once $file;
 });
 
-// if current_xdag_file has been defined
+// check if mandatory config values are present
 if (!isset($config['base_dir']) || !isset($config['current_xdag_file']))
 	die("Config key 'base_dir' or 'current_xdag_file' is missing.\n");
 
-// current_xdag_file default to CURRENT_XDAG
-// it stands for the current number (1,2) as suffix to file in xdag1 or xdag2
+// current_xdag_file defaults to CURRENT_XDAG
+// file contents (1 or 2) mark current (active) XDAG daemon folder, e.g. xdag1 or xdag2
 $current_xdag = @file_get_contents($config['base_dir'] . '/' . $config['current_xdag_file']);
 if (!preg_match('/^[0-9]+$/', $current_xdag))
 	die("current_xdag_file doesn't contain positive integer (check config.php).\n");
 
-// socket file used in Xdag class::commandStream::socket_connect($socket, $this->socket_file)
+// socket file used in Xdag commandStream socket_connect($socket, $this->socket_file)
 // which is a AF_UNIX IPC method
-// to write/read file through socket used for in-process data communication
+// to write/read file through socket used for inter-process data communication
 $socket_file = $config['base_dir'] . '/xdag' . $current_xdag . '/client/unix_sock.dat';
 
-// default to use Xdag class
+// use Xdag class by default, or switch to XdagLocal for local development without a running XDAG daemon
 if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\XdagLocal($socket_file);
 	$xdag->setVersion($config['xdag_version'] ?? '0.2.5');
@@ -62,23 +63,21 @@ if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\Xdag($socket_file);
 }
 
-// params are dispatched to inject in controller class to make a execution
+// construct controller class to be executed and inject application config and Xdag class
 $controller = "App\\Controllers\\$controller";
 $controller = new $controller($config, $xdag);
 
-// load parameters in execution of core.php
+// prepare arguments for controller's index method
 $args = $argv;
-
-// blocks e.g
+// discard "script name" command line argument as it is not used throughout the code
+array_shift($args);
+// discard "operation" command line argument as it was already parsed
 array_shift($args);
 
-// gather e.g
-array_shift($args);
-
-// execution controller with params
+// execute controller's "index" method with leftover command line arguments
 call_user_func_array([$controller, 'index'], $args);
 
-// give a help for usage printing
+// function prints usage information (help) and exits the program
 function usage()
 {
 	die("Usage: php " . basename(__FILE__, '.php') . " operation [args, ...]
@@ -151,6 +150,7 @@ blocks args:
 ");
 }
 
+// debugging function to "dump and die", useful for development purposes
 function dd()
 {
 	foreach (func_get_args() as $arg) {
