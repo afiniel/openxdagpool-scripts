@@ -1,22 +1,29 @@
 <?php
 
+// help finding config.php at the same directory
 define('__ROOT__', __DIR__);
 
+// if params is less than 2 , then make a notification
 if ($argc < 2)
 	usage();
 
+// so the os time must be set to match this default UTC
 date_default_timezone_set('UTC');
 
+// reading configs from
 $config = require_once __DIR__ . '/config.php';
 
+// changing cmd to classname in this mapping
 $map = ['livedata' => 'LiveDataController', 'fastdata' => 'FastDataController', 'blocks' => 'BlocksController', 'balance' => 'BalanceController'];
 $controller = $map[$argv[1]] ?? null;
 
+// only livedata fastdata blocks balance are accepted
 if (!$controller) {
 	echo "Invalid operation.\n";
 	usage();
 }
 
+// if in using of a class from namespace App/* then find it in __DIR__/src
 spl_autoload_register(function ($class) {
 	$class = explode('\\', $class);
 	if ($class[0] == 'App')
@@ -32,15 +39,22 @@ spl_autoload_register(function ($class) {
 	require_once $file;
 });
 
+// if current_xdag_file has been defined
 if (!isset($config['base_dir']) || !isset($config['current_xdag_file']))
 	die("Config key 'base_dir' or 'current_xdag_file' is missing.\n");
 
+// current_xdag_file default to CURRENT_XDAG
+// it stands for the current number (1,2) as suffix to file in xdag1 or xdag2
 $current_xdag = @file_get_contents($config['base_dir'] . '/' . $config['current_xdag_file']);
 if (!preg_match('/^[0-9]+$/', $current_xdag))
 	die("current_xdag_file doesn't contain positive integer (check config.php).\n");
 
+// socket file used in Xdag class::commandStream::socket_connect($socket, $this->socket_file)
+// which is a AF_UNIX IPC method
+// to write/read file through socket used for in-process data communication
 $socket_file = $config['base_dir'] . '/xdag' . $current_xdag . '/client/unix_sock.dat';
 
+// default to use Xdag class
 if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\XdagLocal($socket_file);
 	$xdag->setVersion($config['xdag_version'] ?? '0.2.5');
@@ -48,14 +62,23 @@ if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\Xdag($socket_file);
 }
 
+// params are dispatched to inject in controller class to make a execution
 $controller = "App\\Controllers\\$controller";
 $controller = new $controller($config, $xdag);
 
+// load parameters in execution of core.php
 $args = $argv;
+
+// blocks e.g
 array_shift($args);
+
+// gather e.g
 array_shift($args);
+
+// execution controller with params
 call_user_func_array([$controller, 'index'], $args);
 
+// give a help for usage printing
 function usage()
 {
 	die("Usage: php " . basename(__FILE__, '.php') . " operation [args, ...]
