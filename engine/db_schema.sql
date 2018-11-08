@@ -1,6 +1,6 @@
 CREATE TABLE accounts(
 	-- always present fields
-	id INT NOT NULL AUTO_INCREMENT,
+	id BIGINT NOT NULL AUTO_INCREMENT,
 	address VARCHAR(32) NOT NULL UNIQUE,
 	inspected_times INT NOT NULL DEFAULT 0,
 
