@@ -1,22 +1,30 @@
 <?php
 
+// __ROOT__ constant defined as current script directory is used to construct various paths
 define('__ROOT__', __DIR__);
 
+// first command line argument is always the script name that was executed (core.php, etc)
+// we need at least the second "operation" argument, without it, print help instead
 if ($argc < 2)
 	usage();
 
+// make sure this program internally runs in UTC timezone
 date_default_timezone_set('UTC');
 
+// read current config
 $config = require_once __DIR__ . '/config.php';
 
+// map command line "operation" argument to controller class name
 $map = ['livedata' => 'LiveDataController', 'fastdata' => 'FastDataController', 'blocks' => 'BlocksController', 'balance' => 'BalanceController'];
 $controller = $map[$argv[1]] ?? null;
 
+// if we were unable to map the "operation" argument to controller, print usage and exit
 if (!$controller) {
 	echo "Invalid operation.\n";
 	usage();
 }
 
+// autoload any class in the App namespace from __DIR__/src
 spl_autoload_register(function ($class) {
 	$class = explode('\\', $class);
 	if ($class[0] == 'App')
@@ -32,15 +40,22 @@ spl_autoload_register(function ($class) {
 	require_once $file;
 });
 
+// check if mandatory config values are present
 if (!isset($config['base_dir']) || !isset($config['current_xdag_file']))
 	die("Config key 'base_dir' or 'current_xdag_file' is missing.\n");
 
+// current_xdag_file defaults to CURRENT_XDAG
+// file contents (1 or 2) mark current (active) XDAG daemon folder, e.g. xdag1 or xdag2
 $current_xdag = @file_get_contents($config['base_dir'] . '/' . $config['current_xdag_file']);
 if (!preg_match('/^[0-9]+$/', $current_xdag))
 	die("current_xdag_file doesn't contain positive integer (check config.php).\n");
 
+// socket file used in Xdag commandStream socket_connect($socket, $this->socket_file)
+// which is a AF_UNIX IPC method
+// to write/read file through socket used for inter-process data communication
 $socket_file = $config['base_dir'] . '/xdag' . $current_xdag . '/client/unix_sock.dat';
 
+// use Xdag class by default, or switch to XdagLocal for local development without a running XDAG daemon
 if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\XdagLocal($socket_file);
 	$xdag->setVersion($config['xdag_version'] ?? '0.2.5');
@@ -48,14 +63,21 @@ if (isset($config['xdag_class']) && $config['xdag_class'] == 'XdagLocal') {
 	$xdag = new App\Xdag\Xdag($socket_file);
 }
 
+// construct controller class to be executed and inject application config and Xdag class
 $controller = "App\\Controllers\\$controller";
 $controller = new $controller($config, $xdag);
 
+// prepare arguments for controller's index method
 $args = $argv;
+// discard "script name" command line argument as it is not used throughout the code
 array_shift($args);
+// discard "operation" command line argument as it was already parsed
 array_shift($args);
+
+// execute controller's "index" method with leftover command line arguments
 call_user_func_array([$controller, 'index'], $args);
 
+// function prints usage information (help) and exits the program
 function usage()
 {
 	die("Usage: php " . basename(__FILE__, '.php') . " operation [args, ...]
@@ -128,6 +150,7 @@ blocks args:
 ");
 }
 
+// debugging function to "dump and die", useful for development purposes
 function dd()
 {
 	foreach (func_get_args() as $arg) {

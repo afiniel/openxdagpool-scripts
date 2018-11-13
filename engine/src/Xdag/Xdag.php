@@ -20,7 +20,7 @@ class Xdag
 	public function isReady()
 	{
 		$state = $this->getState();
-		return stripos($state, 'normal operation') !== false || stripos($state, 'transfer to complete') !== false;
+		return stripos($state, 'normal') !== false || stripos($state, 'transfer to complete') !== false;
 	}
 
 	public function isAddress($address)
