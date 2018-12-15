@@ -51,7 +51,7 @@ class Accounts
 		while (($line = @fgets($file)) !== false) {
 			$line = preg_split('/\s+/', trim($line));
 
-			if (count($line) !== 4)
+			if (count($line) < 4)
 				continue;
 
 			$this->saveAccount($line[0], [

@@ -159,7 +159,7 @@ class Block
 					continue;
 				}
 
-				if (preg_match('/\s*(fee|input|output|earning): ([a-zA-Z0-9\/+]{32})\s*([0-9]*\.[0-9]*)/i', $line, $matches)) {
+				if (preg_match('/^\s*(fee|input|output): ([a-zA-Z0-9\/+]{32})\s+([0-9]+\.[0-9]+)$/si', $line, $matches)) {
 					list(, $direction, $address, $amount) = $matches;
 					$this->transactions[] = [
 						'direction' => strtolower(trim($direction)),
@@ -168,13 +168,14 @@ class Block
 					];
 				}
 			} else if ($state == 'addresses') {
-				if (preg_match('/\s*(fee|input|output|earning): ([a-zA-Z0-9\/+]{32})\s*([0-9]*\.[0-9]*)\s*(.*)/i', $line, $matches)) {
-					list(, $direction, $address, $amount, $time) = $matches;
+				if (preg_match('/^\s*(fee|input|output|earning): ([a-zA-Z0-9\/+]{32})\s+([0-9]+\.[0-9]+)\s+([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3})(.*)$/si', $line, $matches)) {
+					list(, $direction, $address, $amount, $time, $remark) = $matches;
 					$this->addresses[] = [
 						'direction' => strtolower(trim($direction)),
 						'address' => trim($address),
 						'amount' => strtolower(trim($amount)),
 						'time' => strtolower(trim($time)),
+						'remark' => trim($remark),
 					];
 				}
 			}
