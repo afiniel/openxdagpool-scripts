@@ -67,7 +67,7 @@ class XdagLocal extends Xdag
 			}
 
 			return $separator . '
-address                            time                      state
+' . $header . '
 ' . $separator . '
 Jim9F5oqJbQA6dM68phqGZ2023UDdngs   2018-07-12 00:35:59.999   Main' . $remark_1 . '
 erOISXoScyQ8TAVgX5OofnOgwy/hNYcN   2018-07-12 00:34:55.999   Main' . $remark_1 . '
