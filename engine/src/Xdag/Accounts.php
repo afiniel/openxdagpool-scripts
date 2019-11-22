@@ -119,7 +119,7 @@ class Accounts
 				continue;
 			}
 
-			if (!$block->hasEarning()) {
+			if (!$block->hasEarning($block_reward)) {
 				$this->invalidateAccount($account);
 				$this->saveAccount($address, $account, true);
 				continue;
@@ -141,7 +141,7 @@ class Accounts
 				$account['exported_at'] = null;
 
 			$account['payouts_sum'] = $sum;
-			$account['fee_percent_guessed'] = round((1024 - $sum) / 1024 * 100, 3); // TODO: block reward may decrease in the future
+			$account['fee_percent_guessed'] = round(($block_reward - $sum) / $block_reward * 100, 3);
 
 			$this->saveAccount($address, $account, true);
 		}

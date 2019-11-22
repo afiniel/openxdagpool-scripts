@@ -52,7 +52,7 @@ class Block
 		return isset($this->properties['flags']) && $this->properties['flags'] == '1f';
 	}
 
-	public function hasEarning()
+	public function hasEarning(&$amount = null)
 	{
 		if (!count($this->addresses))
 			return false;
@@ -60,16 +60,19 @@ class Block
 		if (!$this->isMainBlock())
 			return false;
 
-		foreach ($this->addresses as $address)
-			if ($address['direction'] == 'earning' && $address['amount'] == '1024.000000000') // TODO: in future, reward may decrease
+		foreach ($this->addresses as $address) {
+			if ($address['direction'] == 'earning') {
+				$amount = $address['amount'];
 				return true;
+			}
+		}
 
 		return false;
 	}
 
 	public function isPaidOut()
 	{
-		return $this->hasEarning() && isset($this->properties['balance']) && $this->properties['balance'] < 1024; // TODO: in future, reward may decrease
+		return $this->hasEarning($amount) && isset($this->properties['balance']) && $this->properties['balance'] < $amount;
 	}
 
 	public function persist($partial = true)
