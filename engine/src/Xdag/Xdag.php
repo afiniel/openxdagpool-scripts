@@ -53,8 +53,10 @@ class Xdag
 		if ($this->version)
 			return $this->version;
 
-		if ($this->versionGreaterThan('0.3.0')) {
-			$out = [$this->command('version')];
+		$out = $this->command('version');
+
+		if (stripos($out, 'illegal') !== false) {
+			$out = [$out];
 		} else {
 			$file = str_replace('"', '\"', dirname($this->socket_file) . '/xdag');
 			exec('"' . $file . '" --help', $out);
