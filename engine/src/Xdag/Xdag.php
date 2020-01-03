@@ -55,7 +55,7 @@ class Xdag
 
 		$out = $this->command('version');
 
-		if (stripos($out, 'illegal') !== false) {
+		if (stripos($out, 'illegal') === false) {
 			$out = [$out];
 		} else {
 			$file = str_replace('"', '\"', dirname($this->socket_file) . '/xdag');
