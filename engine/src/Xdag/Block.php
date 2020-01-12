@@ -49,7 +49,7 @@ class Block
 
 	public function isMainBlock()
 	{
-		return isset($this->properties['flags']) && $this->properties['flags'] == '1f';
+		return isset($this->properties['flags']) && in_array($this->properties['flags'], ['1f', '9f']);
 	}
 
 	public function hasEarning(&$amount = null)
