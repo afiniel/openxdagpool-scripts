@@ -48,14 +48,19 @@ class Accounts
 		if (!$file)
 			throw new AccountsException('Unable to open file: ' . $file_name);
 
+		$address_field = 0;
+
 		while (($line = @fgets($file)) !== false) {
 			$line = preg_split('/\s+/', trim($line));
 
 			if (count($line) < 4)
 				continue;
 
+			if ($line[0] == 'height')
+				$address_field = 1;
+
 			try {
-				$this->saveAccount($line[0], [
+				$this->saveAccount($line[$address_field], [
 					'hash' => null,
 					'payouts_sum' => null,
 					// fee will be calculated properly for main blocks that
